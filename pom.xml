@@ -51,6 +51,20 @@
             <version>18.0</version>
         </dependency>
 
+        <!-- IntelliJ IDA GUI Designer: Forms Runtime -->
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>forms_rt</artifactId>
+            <version>7.0.3</version>
+        </dependency>
+
+        <!-- Swing Look and Feel -->
+        <dependency>
+            <groupId>com.seaglasslookandfeel</groupId>
+            <artifactId>seaglasslookandfeel</artifactId>
+            <version>0.2</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -63,6 +77,24 @@
 
     <build>
         <plugins>
+            <!-- IntelliJ IDA GUI Designer: Build Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>ideauidesigner-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>javac2</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <fork>true</fork>
+                    <debug>true</debug>
+                    <failOnError>true</failOnError>
+                </configuration>
+            </plugin>
+            <!-- Shade main artifact -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -77,7 +109,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>bg.unisofia.clio.archtools.ui.cli.CliApp</mainClass>
+                                    <mainClass>bg.unisofia.clio.archtools.ui.gui.GuiApp</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
