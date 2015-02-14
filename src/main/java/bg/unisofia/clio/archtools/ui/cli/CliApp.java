@@ -33,7 +33,7 @@ public class CliApp {
             clusteringService.outputSheetName = ns.getString(ARG_OUTPUT_SHEET);
             clusteringService.numberOfClusters = ns.getInt(ARG_NUM_CLUSTERS);
             clusteringService.linkageStrategy = ns.<Linkage>get(ARG_LINKAGE).strategy;
-            clusteringService.distanceMetric = ns.<Distance>get(ARG_DISTANCE).metric;
+            clusteringService.distanceMeasure = ns.<Distance>get(ARG_DISTANCE).measure;
             // perform clustering
             clusteringService.computeClusters();
         } catch (ArgumentParserException e) {

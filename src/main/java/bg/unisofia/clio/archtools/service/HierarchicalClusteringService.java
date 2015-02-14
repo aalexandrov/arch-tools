@@ -1,7 +1,10 @@
 package bg.unisofia.clio.archtools.service;
 
-import bg.unisofia.clio.archtools.model.distance.Distance;
-import com.apporiented.algorithm.clustering.*;
+import bg.unisofia.clio.archtools.model.point.DoublePointWithLabel;
+import com.apporiented.algorithm.clustering.Cluster;
+import com.apporiented.algorithm.clustering.ClusteringAlgorithm;
+import com.apporiented.algorithm.clustering.DefaultClusteringAlgorithm;
+import com.apporiented.algorithm.clustering.LinkageStrategy;
 import org.apache.poi.ss.usermodel.*;
 
 import java.io.File;
@@ -30,8 +33,6 @@ public class HierarchicalClusteringService extends ClusteringService {
 
     public LinkageStrategy linkageStrategy;
 
-    public Distance.Metric distanceMetric;
-
 
     @Override
     public void computeClusters() throws Exception {
@@ -44,56 +45,34 @@ public class HierarchicalClusteringService extends ClusteringService {
             throw new IllegalArgumentException(String.format("Unknown input sheet %s in file %s", inputSheetName, inputFile));
         }
 
-        // get title row
-        Row titleRow = inputSheet.getRow(0);
-
-        // collect columns to be used as features
-        List<Integer> featureColumns = new ArrayList<>();
-        for (Cell cell : titleRow) {
-            CellStyle cellStyle = cell.getCellStyle();
-            if (!cellStyle.getHidden() && wb.getFontAt(cellStyle.getFontIndex()).getUnderline() != 0) {
-                featureColumns.add(cell.getColumnIndex());
-            }
-        }
+        List<Integer> featureColumns = collectFeatureColumns(wb, inputSheet);
+        int numberOfFeatures = featureColumns.size();
 
         // collect observations
-        List<String> itemNames = new ArrayList<>();
-        List<ArrayList<Double>> itemFeatures = new ArrayList<>();
-        for (Row row : inputSheet) {
-            if (row.getRowNum() != titleRow.getRowNum() && !"".equals(row.getCell(IDX_ITEM_NAME, Row.CREATE_NULL_AS_BLANK).toString())) {
-                // construct feature columns ArrayList
-                ArrayList<Double> features = new ArrayList<>(featureColumns.size());
-                for (int i = 0; i < featureColumns.size(); i++) {
-                    Cell cell = row.getCell(featureColumns.get(i));
-                    CellValue value = cell != null ? evaluator.evaluate(cell) : null;
+        List<DoublePointWithLabel> observations = collectObservations(inputSheet, evaluator, featureColumns);
 
-                    if (value == null) {
-                        features.add(i, 0.0);
-                    } else if (value.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                        features.add(i, value.getNumberValue());
-                    } else {
-                        features.add(i, 0.0);
-                    }
-                }
-                // add to items set
-                itemNames.add(row.getCell(IDX_ITEM_NAME).toString());
-                itemFeatures.add(features);
+        // normalize observations
+        if (normalize) normalize(numberOfFeatures, observations);
+
+        // compute distance matrix
+        double[][] matrix = new double[observations.size()][observations.size()];
+        for (int i = 0; i < observations.size(); i++) {
+            double[] features1 = observations.get(i).getPoint();
+            for (int j = 0; j < observations.size(); j++) {
+                double[] features2 = observations.get(j).getPoint();
+                // pre-compute and store the distance between the items at positions i and k in the distance matrix
+                matrix[i][j] = distanceMeasure.compute(features1, features2);
             }
         }
 
-        // compute distance matrix
-        double[][] matrix = new double[itemNames.size()][itemNames.size()];
-        for (int i = 0; i < itemNames.size(); i++) {
-            ArrayList<Double> features1 = itemFeatures.get(i);
-            for (int j = 0; j < itemNames.size(); j++) {
-                ArrayList<Double> features2 = itemFeatures.get(j);
-                // pre-compute and store the distance between the items at positions i and k in the distance matrix
-                matrix[i][j] = distanceMetric.apply(features1, features2);
-            }
+        // extract labels
+        String[] itemNames = new String[observations.size()];
+        for (int i = 0; i < observations.size(); i++) {
+            itemNames[i] = observations.get(i).label;
         }
 
         ClusteringAlgorithm alg = new DefaultClusteringAlgorithm();
-        Cluster topCluster = alg.performClustering(matrix, itemNames.toArray(new String[itemNames.size()]), linkageStrategy);
+        Cluster topCluster = alg.performClustering(matrix, itemNames, linkageStrategy);
 
         List<Cluster> clusters = topKClusters(topCluster, numberOfClusters);
 

@@ -29,7 +29,6 @@
             <version>3.11</version>
         </dependency>
 
-
         <!-- Arguments parsing -->
         <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>

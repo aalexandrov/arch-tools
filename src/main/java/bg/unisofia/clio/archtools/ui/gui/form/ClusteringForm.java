@@ -25,6 +25,7 @@ public class ClusteringForm extends JFrame {
     private JButton computeClustersButton;
     private JRadioButton hacAlgorithm;
     private JRadioButton kMeansAlgorithm;
+    private JCheckBox normalizeSample;
 
     private File inputFile = null;
 
@@ -134,7 +135,8 @@ public class ClusteringForm extends JFrame {
                     hierarchicalClusteringService.outputSheetName = inputSheetName.getSelectedItem() + " clustered (HAC)";
                     hierarchicalClusteringService.numberOfClusters = (Integer) numberOfClusters.getSelectedItem();
                     hierarchicalClusteringService.linkageStrategy = ((Linkage) linkage.getSelectedItem()).strategy;
-                    hierarchicalClusteringService.distanceMetric = ((Distance) distance.getSelectedItem()).metric;
+                    hierarchicalClusteringService.distanceMeasure = ((Distance) distance.getSelectedItem()).measure;
+                    hierarchicalClusteringService.normalize = normalizeSample.isSelected();
                     // set clustering service
                     clusteringService = hierarchicalClusteringService;
                 } else { // k-means (default)
@@ -145,6 +147,7 @@ public class ClusteringForm extends JFrame {
                     kMeansClusteringService.outputSheetName = inputSheetName.getSelectedItem() + " clustered (K-Means)";
                     kMeansClusteringService.numberOfClusters = (Integer) numberOfClusters.getSelectedItem();
                     kMeansClusteringService.distanceMeasure = ((Distance) distance.getSelectedItem()).measure;
+                    kMeansClusteringService.normalize = normalizeSample.isSelected();
                     // set clustering service
                     clusteringService = kMeansClusteringService;
                 }
