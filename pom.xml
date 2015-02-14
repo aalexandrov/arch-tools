@@ -37,11 +37,17 @@
             <version>0.4.4</version>
         </dependency>
 
-        <!-- Clustering library -->
+        <!-- Hierarchical Clustering library -->
         <dependency>
             <groupId>com.apporiented</groupId>
             <artifactId>hierarchical-clustering</artifactId>
             <version>1.0.3</version>
+        </dependency>
+        <!-- K-Means Clustering library -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.4.1</version>
         </dependency>
 
         <!-- Utilities -->

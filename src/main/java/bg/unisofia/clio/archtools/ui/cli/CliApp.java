@@ -2,7 +2,7 @@ package bg.unisofia.clio.archtools.ui.cli;
 
 import bg.unisofia.clio.archtools.model.distance.Distance;
 import bg.unisofia.clio.archtools.model.hac.Linkage;
-import bg.unisofia.clio.archtools.service.ClusteringService;
+import bg.unisofia.clio.archtools.service.HierarchicalClusteringService;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -26,7 +26,7 @@ public class CliApp {
         try {
             Namespace ns = getParser().parseArgs(args);
             // create service
-            ClusteringService clusteringService = new ClusteringService();
+            HierarchicalClusteringService clusteringService = new HierarchicalClusteringService();
             // set clustering parameters
             clusteringService.inputFile = ns.get(ARG_FILE);
             clusteringService.inputSheetName = ns.getString(ARG_INPUT_SHEET);

@@ -3,6 +3,8 @@ package bg.unisofia.clio.archtools.ui.gui.form;
 import bg.unisofia.clio.archtools.model.distance.Distance;
 import bg.unisofia.clio.archtools.model.hac.Linkage;
 import bg.unisofia.clio.archtools.service.ClusteringService;
+import bg.unisofia.clio.archtools.service.HierarchicalClusteringService;
+import bg.unisofia.clio.archtools.service.KMeansClusteringService;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -21,10 +23,12 @@ public class ClusteringForm extends JFrame {
     private JComboBox<Linkage> linkage;
     private JComboBox<Distance> distance;
     private JButton computeClustersButton;
+    private JRadioButton hacAlgorithm;
+    private JRadioButton kMeansAlgorithm;
 
     private File inputFile = null;
 
-    public ClusteringForm(final ClusteringService clusteringService) {
+    public ClusteringForm() {
         super("Archaeology Tools");
 
         // compute the CWD
@@ -67,7 +71,7 @@ public class ClusteringForm extends JFrame {
                     inputFile = fileChooser.getSelectedFile();
 
                     try {
-                        inputSheetName.setModel(new DefaultComboBoxModel<>(clusteringService.getInputSheets(inputFile)));
+                        inputSheetName.setModel(new DefaultComboBoxModel<>(ClusteringService.getInputSheets(inputFile)));
                         inputSheetName.setSelectedIndex(0);
                         computeClustersButton.setEnabled(true);
                     } catch (Exception e) {
@@ -80,6 +84,27 @@ public class ClusteringForm extends JFrame {
 
             }
         });
+
+        // on algorithm change (HAC)
+        ActionListener algorithmChange = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                JRadioButton button = (JRadioButton) event.getSource();
+
+                if (button == hacAlgorithm) {
+                    linkage.setEnabled(true);
+                    distance.setEnabled(true);
+                } else if (button == kMeansAlgorithm) {
+                    linkage.setEnabled(false);
+                    distance.setEnabled(false);
+                }
+            }
+        };
+        hacAlgorithm.addActionListener(algorithmChange);
+        kMeansAlgorithm.addActionListener(algorithmChange);
+        // disable by default
+        linkage.setEnabled(false);
+        distance.setEnabled(false);
 
         // on file chooser click
         inputSheetName.addActionListener(new ActionListener() {
@@ -98,13 +123,31 @@ public class ClusteringForm extends JFrame {
                     return;
                 }
 
+                ClusteringService clusteringService;
+
                 // set clustering parameters
-                clusteringService.inputFile = inputFile;
-                clusteringService.inputSheetName = (String) inputSheetName.getSelectedItem();
-                clusteringService.outputSheetName = inputSheetName.getSelectedItem() + " clustered";
-                clusteringService.numberOfClusters = (Integer) numberOfClusters.getSelectedItem();
-                clusteringService.linkageStrategy = ((Linkage) linkage.getSelectedItem()).strategy;
-                clusteringService.distanceMetric = ((Distance) distance.getSelectedItem()).metric;
+                if (hacAlgorithm.isSelected()) {
+                    // configure clustering service
+                    HierarchicalClusteringService hierarchicalClusteringService = new HierarchicalClusteringService();
+                    hierarchicalClusteringService.inputFile = inputFile;
+                    hierarchicalClusteringService.inputSheetName = (String) inputSheetName.getSelectedItem();
+                    hierarchicalClusteringService.outputSheetName = inputSheetName.getSelectedItem() + " clustered (HAC)";
+                    hierarchicalClusteringService.numberOfClusters = (Integer) numberOfClusters.getSelectedItem();
+                    hierarchicalClusteringService.linkageStrategy = ((Linkage) linkage.getSelectedItem()).strategy;
+                    hierarchicalClusteringService.distanceMetric = ((Distance) distance.getSelectedItem()).metric;
+                    // set clustering service
+                    clusteringService = hierarchicalClusteringService;
+                } else { // k-means (default)
+                    // configure clustering service
+                    KMeansClusteringService kMeansClusteringService = new KMeansClusteringService();
+                    kMeansClusteringService.inputFile = inputFile;
+                    kMeansClusteringService.inputSheetName = (String) inputSheetName.getSelectedItem();
+                    kMeansClusteringService.outputSheetName = inputSheetName.getSelectedItem() + " clustered (K-Means)";
+                    kMeansClusteringService.numberOfClusters = (Integer) numberOfClusters.getSelectedItem();
+                    kMeansClusteringService.distanceMeasure = ((Distance) distance.getSelectedItem()).measure;
+                    // set clustering service
+                    clusteringService = kMeansClusteringService;
+                }
 
                 // perform clustering
                 try {
