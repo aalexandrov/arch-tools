@@ -49,7 +49,7 @@ public class KMeansClusteringService extends ClusteringService {
             k++;
             for (DoublePointWithLabel point : cluster.getPoints()) {
                 Row row = outputSheet.createRow(i);
-                row.createCell(0).setCellValue(point.label);
+                row.createCell(0).setCellValue(stringValueOf(point.label));
                 row.getCell(0).setCellStyle(point.cellStyle);
                 row.createCell(1).setCellValue(k);
                 row.getCell(1).setCellStyle(point.cellStyle);

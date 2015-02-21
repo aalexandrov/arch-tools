@@ -67,8 +67,10 @@ public class HierarchicalClusteringService extends ClusteringService {
 
         // extract labels
         String[] itemNames = new String[observations.size()];
+        HashMap<String, CellStyle> itemStyles = new HashMap<>(observations.size());
         for (int i = 0; i < observations.size(); i++) {
-            itemNames[i] = observations.get(i).label;
+            itemNames[i] = stringValueOf(observations.get(i).label);
+            itemStyles.put(stringValueOf(observations.get(i).label), observations.get(i).cellStyle);
         }
 
         ClusteringAlgorithm alg = new DefaultClusteringAlgorithm();
@@ -89,7 +91,9 @@ public class HierarchicalClusteringService extends ClusteringService {
             for (String item : getItems(cluster)) {
                 Row row = outputSheet.createRow(i);
                 row.createCell(0).setCellValue(item);
+                row.getCell(0).setCellStyle(itemStyles.get(item));
                 row.createCell(1).setCellValue(k);
+                row.getCell(1).setCellStyle(itemStyles.get(item));
                 i++;
             }
             i++;

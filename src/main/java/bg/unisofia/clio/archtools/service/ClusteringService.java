@@ -4,6 +4,7 @@ import bg.unisofia.clio.archtools.model.point.DoublePointWithLabel;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public abstract class ClusteringService {
                     }
                 }
                 // add to items set
-                String label = evaluator.evaluate(row.getCell(IDX_ITEM_NAME)).getStringValue();
+                CellValue label = evaluator.evaluate(row.getCell(IDX_ITEM_NAME));
                 observations.add(new DoublePointWithLabel(label, features, row.getCell(IDX_ITEM_NAME).getCellStyle()));
             }
         }
@@ -102,6 +103,23 @@ public abstract class ClusteringService {
             for (int j = 0; j < numberOfFeatures; j++) {
                 point[j] = featureSamples[j][i];
             }
+        }
+    }
+
+    protected String stringValueOf(CellValue value) {
+        switch (value.getCellType()) {
+            case XSSFCell.CELL_TYPE_STRING:
+                return value.getStringValue();
+            case XSSFCell.CELL_TYPE_NUMERIC:
+                return String.valueOf(value.getNumberValue());
+            case XSSFCell.CELL_TYPE_BLANK:
+                return "";
+            case XSSFCell.CELL_TYPE_BOOLEAN:
+                return String.valueOf(value.getBooleanValue());
+            case XSSFCell.CELL_TYPE_ERROR:
+                return "error";
+            default:
+                return "unknown";
         }
     }
 }
